@@ -13,7 +13,7 @@
 html,body{height:100%;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;overflow:hidden;}
 body{display:flex;flex-direction:column;height:100dvh;}
 
-.tabs{display:flex;background:#1C1C1E;flex-shrink:0;}
+.tabs{display:flex;background:#1C1C1E;flex-shrink:0;border-radius:0 0 20px 20px;overflow:hidden;}
 .tab{flex:1;padding:14px 4px 12px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;background:none;border:none;color:#636366;cursor:pointer;border-top:2px solid transparent;}
 .tab.active{color:#0A84FF;border-top:2px solid #0A84FF;}
 
@@ -21,10 +21,10 @@ body{display:flex;flex-direction:column;height:100dvh;}
 
 .clock-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;}
 .clock-label{font-size:15px;font-weight:500;color:#636366;letter-spacing:.06em;text-transform:uppercase;min-height:22px;text-align:center;}
-.clock{font-size:clamp(80px,24vw,130px);font-weight:200;letter-spacing:-.02em;color:#fff;line-height:1;font-variant-numeric:tabular-nums;}
+.clock{font-size:clamp(100px,32vw,160px);font-weight:200;letter-spacing:-.02em;color:#fff;line-height:1;font-variant-numeric:tabular-nums;}
 .clock.cd{color:#FF9F0A;}
 .clock.done{color:#FF453A;}
-.round-label{font-size:20px;font-weight:500;color:#0A84FF;min-height:28px;}
+.round-label{font-size:26px;font-weight:500;color:#0A84FF;min-height:32px;}
 .phase-label{font-size:17px;font-weight:600;color:#30D158;min-height:24px;}
 .phase-label.rest{color:#FF9F0A;}
 .tc-badge{display:inline-flex;align-items:center;gap:6px;background:#2C1A00;border:1px solid #FF9F0A;border-radius:20px;padding:4px 14px;font-size:13px;color:#FF9F0A;font-weight:600;margin-top:4px;min-height:28px;}
@@ -67,6 +67,30 @@ input:checked+.slider:before{transform:translateX(20px);}
 .modal-btn{flex:1;height:56px;border-radius:14px;border:none;font-size:17px;font-weight:600;cursor:pointer;}
 .modal-btn.cancel{background:#2C2C2E;color:#fff;}
 .modal-btn.ok{background:#0A84FF;color:#fff;}
+
+/* LANDSCAPE */
+@media (orientation: landscape) {
+  .main{flex-direction:row;}
+  .clock-area{flex:1;padding:8px 16px;}
+  .clock{font-size:clamp(56px,22vh,110px);}
+  .clock-label{font-size:13px;}
+  .round-label{font-size:16px;}
+  .phase-label{font-size:14px;}
+  .tc-badge{font-size:11px;padding:3px 10px;min-height:22px;}
+  .info-bar{font-size:11px;}
+  .controls{flex-direction:column;padding:8px 12px;gap:12px;justify-content:center;flex-shrink:0;}
+  .btn-circle{width:64px;height:64px;}
+  .btn-reset{font-size:22px;}
+  .settings-panel{width:210px;border-radius:0;overflow-y:auto;padding:10px 12px;flex-shrink:0;}
+  .settings-row{padding:7px 2px;}
+  .settings-row label{font-size:13px;}
+  .settings-hint{font-size:10px;}
+  .sb{width:30px;height:30px;font-size:16px;}
+  .sv{font-size:13px;min-width:42px;padding:4px 2px;}
+  .tabs{position:fixed;bottom:0;left:0;right:0;}
+  body{padding-bottom:38px;}
+}
+
 .hidden{display:none!important;}
 </style>
 </head>
@@ -197,172 +221,126 @@ input:checked+.slider:before{transform:translateX(20px);}
 </div>
 
 <script>
-// ─── SVG ICONS ───────────────────────────────────────────
-const ICON_PLAY = '<svg width="24" height="28" viewBox="0 0 26 30" fill="white"><polygon points="4,0 26,15 4,30"/></svg>';
+const ICON_PLAY='<svg width="24" height="28" viewBox="0 0 26 30" fill="white"><polygon points="4,0 26,15 4,30"/></svg>';
 
-// ─── STATE ───────────────────────────────────────────────
-const cfg = {'ft-tc':20*60,'amrap-dur':20*60,'emom-work':40,'emom-rest':20,'emom-tc':30*60,'emom-rounds':10};
-const cfgMin = {'ft-tc':60,'amrap-dur':60,'emom-work':5,'emom-rest':5,'emom-tc':60};
+const cfgMin={'ft-tc':60,'amrap-dur':60,'emom-work':5,'emom-rest':5,'emom-tc':60};
+const cfgDefaults={'ft-tc':20*60,'amrap-dur':20*60,'emom-work':40,'emom-rest':20,'emom-tc':30*60,'emom-rounds':10};
 
-let mode='fortime', state='idle';
-let elapsed=0, interval=null, cdCount=10;
-let emomPhase='work', emomRound=1, emomPhaseElapsed=0;
+function loadCfg(){try{const s=localStorage.getItem('cf-timer-cfg');return s?Object.assign({},cfgDefaults,JSON.parse(s)):Object.assign({},cfgDefaults);}catch(e){return Object.assign({},cfgDefaults);}}
+function saveCfg(){try{localStorage.setItem('cf-timer-cfg',JSON.stringify(cfg));}catch(e){}}
+const cfg=loadCfg();
+
+let mode='fortime',state='idle';
+let elapsed=0,interval=null,cdCount=10;
+let emomPhase='work',emomRound=1,emomPhaseElapsed=0;
 let modalKey='';
 
-// ─── AUDIO ───────────────────────────────────────────────
-const AC = new (window.AudioContext||window.webkitAudioContext)();
+// AUDIO
+const AC=new (window.AudioContext||window.webkitAudioContext)();
 function beep(f,d,t='sine',g=.6){const o=AC.createOscillator(),gn=AC.createGain();o.connect(gn);gn.connect(AC.destination);o.type=t;o.frequency.value=f;gn.gain.setValueAtTime(g,AC.currentTime);gn.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);o.start();o.stop(AC.currentTime+d);}
-function sndCd(){beep(880,.12,'sine',.7);}
-function sndGo(){beep(1046,.08);setTimeout(()=>beep(1318,.08),90);setTimeout(()=>beep(1760,.22,'sine',.9),180);}
-function sndWork(){beep(1174,.07);setTimeout(()=>beep(1568,.18,'sine',.8),80);}
-function sndRest(){beep(523,.07);setTimeout(()=>beep(392,.22,'sine',.7),80);}
-function sndBuzzer(){
-  [0,700,1400].forEach(t=>setTimeout(()=>{
-    const o=AC.createOscillator(),g=AC.createGain();
-    o.connect(g);g.connect(AC.destination);
-    o.type='sawtooth';o.frequency.setValueAtTime(220,AC.currentTime);
-    g.gain.setValueAtTime(1.0,AC.currentTime);
-    g.gain.setValueAtTime(1.0,AC.currentTime+.48);
-    g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.52);
-    o.start();o.stop(AC.currentTime+.55);
-  },t));
-}
+function sndCd(){beep(880,.12,'sine',.7);vibCd();}
+function sndGo(){beep(1046,.08);setTimeout(()=>beep(1318,.08),90);setTimeout(()=>beep(1760,.22,'sine',.9),180);vibGo();}
+function sndWork(){beep(1174,.07);setTimeout(()=>beep(1568,.18,'sine',.8),80);vibWork();}
+function sndRest(){beep(523,.07);setTimeout(()=>beep(392,.22,'sine',.7),80);vibRest();}
+function sndBuzzerFull(){sndBuzzer();vibBuzzer();}
+function sndBuzzer(){[0,700,1400].forEach(t=>setTimeout(()=>{const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.type='sawtooth';o.frequency.setValueAtTime(220,AC.currentTime);g.gain.setValueAtTime(1.0,AC.currentTime);g.gain.setValueAtTime(1.0,AC.currentTime+.48);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.52);o.start();o.stop(AC.currentTime+.55);},t));}
+
+// VIBRATION
+function vib(pattern){if(navigator.vibrate)navigator.vibrate(pattern);}
+function vibGo(){vib([100,50,100,50,300]);}       // start: double tap + long
+function vibWork(){vib([200]);}                    // work: single firm
+function vibRest(){vib([80,60,80]);}               // rest: double soft
+function vibCd(){vib([40]);}                       // countdown pip: short tap
+function vibBuzzer(){vib([400,150,400,150,400]);} // finish: three long
 document.addEventListener('touchstart',()=>AC.resume(),{once:true});
 document.addEventListener('click',()=>AC.resume(),{once:true});
 
-// ─── WAKE LOCK ───────────────────────────────────────────
+// WAKE LOCK
 let wakeLock=null;
-async function requestWakeLock(){
-  if(!('wakeLock' in navigator))return;
-  try{wakeLock=await navigator.wakeLock.request('screen');}catch(e){console.warn('Wake lock failed:',e);}
-}
-async function releaseWakeLock(){
-  if(wakeLock){try{await wakeLock.release();}catch(e){}wakeLock=null;}
-}
-// Re-acquire after visibility change (required on iOS)
-document.addEventListener('visibilitychange',async()=>{
-  if(document.visibilityState==='visible'&&(state==='running'||state==='countdown')){
-    await requestWakeLock();
-  }
-});
+async function requestWakeLock(){if(!('wakeLock' in navigator))return;try{wakeLock=await navigator.wakeLock.request('screen');}catch(e){}}
+async function releaseWakeLock(){if(wakeLock){try{await wakeLock.release();}catch(e){}wakeLock=null;}}
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&(state==='running'||state==='countdown'))await requestWakeLock();});
 
-// ─── FORMAT ──────────────────────────────────────────────
+// FORMAT
 function fmt(s){s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+(s%60<10?'0':'')+s%60;}
 
-// ─── HELPERS ─────────────────────────────────────────────
+// HELPERS
+function showTabs(v){document.querySelector('.tabs').classList.toggle('hidden',!v);}
+
 function setPauseVisible(v){document.getElementById('btnPause').classList.toggle('hidden',!v);}
 function setStartVisible(v){document.getElementById('btnStart').classList.toggle('hidden',!v);}
 function showSettings(v){document.getElementById('settingsPanel').classList.toggle('hidden',!v);}
+function setStartBtn(type){const b=document.getElementById('btnStart');if(type==='start'){b.textContent='START';b.style.fontSize='15px';}else if(type==='play'){b.innerHTML=ICON_PLAY;b.style.fontSize='';}}
 
-function setStartBtn(type){
-  const b=document.getElementById('btnStart');
-  if(type==='start'){b.innerHTML='';b.textContent='START';b.style.fontSize='15px';}
-  else if(type==='play'){b.textContent='';b.innerHTML=ICON_PLAY;b.style.fontSize='';}
-}
+// STEPPERS
+function adjSec(k,d){cfg[k]=Math.max(cfgMin[k]||5,cfg[k]+d);document.getElementById(k+'-val').textContent=fmt(cfg[k]);saveCfg();resetTimer();}
+function adjRounds(d){cfg['emom-rounds']=Math.max(1,cfg['emom-rounds']+d);document.getElementById('emom-rounds-val').textContent=cfg['emom-rounds'];saveCfg();resetTimer();}
 
-// ─── STEPPERS ────────────────────────────────────────────
-function adjSec(k,d){cfg[k]=Math.max(cfgMin[k]||5,cfg[k]+d);document.getElementById(k+'-val').textContent=fmt(cfg[k]);resetTimer();}
-function adjRounds(d){cfg['emom-rounds']=Math.max(1,cfg['emom-rounds']+d);document.getElementById('emom-rounds-val').textContent=cfg['emom-rounds'];resetTimer();}
-
-// ─── MODALS ──────────────────────────────────────────────
-function openModal(k,title){
-  modalKey=k;
-  document.getElementById('modalTitle').textContent=title;
-  document.getElementById('mMin').value=Math.floor(cfg[k]/60);
-  document.getElementById('mSec').value=cfg[k]%60;
-  document.getElementById('modal').classList.remove('hidden');
-  setTimeout(()=>document.getElementById('mMin').focus(),150);
-}
+// MODALS
+function openModal(k,title){modalKey=k;document.getElementById('modalTitle').textContent=title;document.getElementById('mMin').value=Math.floor(cfg[k]/60);document.getElementById('mSec').value=cfg[k]%60;document.getElementById('modal').classList.remove('hidden');setTimeout(()=>document.getElementById('mMin').focus(),150);}
 function closeModal(){document.getElementById('modal').classList.add('hidden');}
-function confirmModal(){
-  const m=parseInt(document.getElementById('mMin').value)||0;
-  const s=parseInt(document.getElementById('mSec').value)||0;
-  cfg[modalKey]=Math.max(cfgMin[modalKey]||5,m*60+s);
-  document.getElementById(modalKey+'-val').textContent=fmt(cfg[modalKey]);
-  closeModal();resetTimer();
-}
-function openRoundsModal(){
-  document.getElementById('mRounds').value=cfg['emom-rounds'];
-  document.getElementById('roundsModal').classList.remove('hidden');
-  setTimeout(()=>document.getElementById('mRounds').focus(),150);
-}
+function confirmModal(){const m=parseInt(document.getElementById('mMin').value)||0;const s=parseInt(document.getElementById('mSec').value)||0;cfg[modalKey]=Math.max(cfgMin[modalKey]||5,m*60+s);document.getElementById(modalKey+'-val').textContent=fmt(cfg[modalKey]);saveCfg();closeModal();resetTimer();}
+function openRoundsModal(){document.getElementById('mRounds').value=cfg['emom-rounds'];document.getElementById('roundsModal').classList.remove('hidden');setTimeout(()=>document.getElementById('mRounds').focus(),150);}
 function closeRoundsModal(){document.getElementById('roundsModal').classList.add('hidden');}
-function confirmRoundsModal(){
-  cfg['emom-rounds']=Math.max(1,parseInt(document.getElementById('mRounds').value)||1);
-  document.getElementById('emom-rounds-val').textContent=cfg['emom-rounds'];
-  closeRoundsModal();resetTimer();
-}
+function confirmRoundsModal(){cfg['emom-rounds']=Math.max(1,parseInt(document.getElementById('mRounds').value)||1);document.getElementById('emom-rounds-val').textContent=cfg['emom-rounds'];saveCfg();closeRoundsModal();resetTimer();}
 function bgClose(e,id){if(e.target===document.getElementById(id))document.getElementById(id).classList.add('hidden');}
 
-// ─── TC TOGGLE ───────────────────────────────────────────
+// TC TOGGLE
 function onTcToggle(){
   document.getElementById('ft-tc-row').style.display=document.getElementById('ft-tc-on').checked?'flex':'none';
   document.getElementById('emom-tc-row').style.display=document.getElementById('emom-tc-on').checked?'flex':'none';
   updateClockUI();
 }
 
-// ─── MODE SWITCH ─────────────────────────────────────────
+// MODE SWITCH
 function switchMode(m){
-  resetTimer(); mode=m;
+  resetTimer();mode=m;
   ['fortime','amrap','emom'].forEach(x=>{
     document.getElementById('tab-'+x).className='tab'+(x===m?' active':'');
     document.getElementById('panel-'+x).classList.toggle('hidden',x!==m);
   });
-  onTcToggle();
-  updateClockUI();
+  onTcToggle();updateClockUI();
 }
 
-// ─── TIMER ───────────────────────────────────────────────
-function startStop(){
-  AC.resume();
-  if(state==='idle'||state==='done') startCd();
-  else if(state==='paused') resumeFromPause();
-}
+// TIMER
+function startStop(){AC.resume();if(state==='idle'||state==='done')startCd();else if(state==='paused')resumeFromPause();}
 
 function startCd(){
   state='countdown';cdCount=10;elapsed=0;
   emomPhase='work';emomRound=1;emomPhaseElapsed=0;
   requestWakeLock();
-  setStartVisible(false);
-  showSettings(false);
-  setPauseVisible(true);
+  setStartVisible(false);showSettings(false);showTabs(false);setPauseVisible(true);
   updateClockUI();
   interval=setInterval(tickCd,1000);
 }
-
 function tickCd(){
   cdCount--;
-  if(cdCount<=3&&cdCount>0) sndCd();
+  if(cdCount<=3&&cdCount>0)sndCd();
   if(cdCount<=0){clearInterval(interval);sndGo();state='running';interval=setInterval(tickRun,1000);}
   updateClockUI();
 }
-
 function resumeFromPause(){
-  const wasCd = cdCount>0&&elapsed===0;
-  state= wasCd?'countdown':'running';
+  const wasCd=cdCount>0&&elapsed===0;
+  state=wasCd?'countdown':'running';
   requestWakeLock();
-  setStartVisible(false);
-  showSettings(false);
-  setPauseVisible(true);
+  setStartVisible(false);showSettings(false);showTabs(false);setPauseVisible(true);
   interval=setInterval(wasCd?tickCd:tickRun,1000);
 }
-
 function tickRun(){
   elapsed++;
-  if(mode==='emom') emomPhaseElapsed++;
+  if(mode==='emom')emomPhaseElapsed++;
   checkTC();
-  if(mode==='amrap') checkAmrap();
-  if(mode==='emom') checkEmom();
+  if(mode==='amrap')checkAmrap();
+  if(mode==='emom')checkEmom();
   updateClockUI();
 }
-
 function checkTC(){
   let on=false,lim=0;
   if(mode==='fortime'){on=document.getElementById('ft-tc-on').checked;lim=cfg['ft-tc'];}
   if(mode==='emom'){on=document.getElementById('emom-tc-on').checked;lim=cfg['emom-tc'];}
-  if(on&&elapsed>=lim) finish();
+  if(on&&elapsed>=lim)finish();
 }
-function checkAmrap(){if(elapsed>=cfg['amrap-dur']) finish();}
+function checkAmrap(){if(elapsed>=cfg['amrap-dur'])finish();}
 function checkEmom(){
   const dur=emomPhase==='work'?cfg['emom-work']:cfg['emom-rest'];
   if(emomPhaseElapsed>=dur){
@@ -371,35 +349,28 @@ function checkEmom(){
     else{emomRound++;if(emomRound>cfg['emom-rounds']){finish();return;}emomPhase='work';sndWork();}
   }
 }
-
 function finish(){
-  clearInterval(interval);state='done';
-  releaseWakeLock();
-  sndBuzzer();
-  setStartBtn('start');setStartVisible(true);
-  showSettings(true);setPauseVisible(false);
+  clearInterval(interval);state='done';releaseWakeLock();sndBuzzerFull();
+  setStartBtn('start');setStartVisible(true);showSettings(true);showTabs(true);setPauseVisible(false);
   updateClockUI();
 }
-
 function pauseTimer(){
-  clearInterval(interval);state='paused';
+  clearInterval(interval);state='paused';releaseWakeLock();
   const isCd=cdCount>0&&elapsed===0;
   setStartBtn('play');setStartVisible(true);
-  if(!isCd&&mode!=='emom') showSettings(true);
-  setPauseVisible(false);
+  if(!isCd&&mode!=='emom')showSettings(true);
+  showTabs(true);setPauseVisible(false);
   updateClockUI();
 }
-
 function resetTimer(){
   clearInterval(interval);state='idle';elapsed=0;cdCount=10;
   emomPhase='work';emomRound=1;emomPhaseElapsed=0;
   releaseWakeLock();
-  setStartBtn('start');setStartVisible(true);
-  showSettings(true);setPauseVisible(false);
+  setStartBtn('start');setStartVisible(true);showSettings(true);showTabs(true);setPauseVisible(false);
   updateClockUI();
 }
 
-// ─── UI ──────────────────────────────────────────────────
+// UI
 function updateClockUI(){
   const cl=document.getElementById('clock');
   const lbl=document.getElementById('clockLabel');
@@ -411,28 +382,20 @@ function updateClockUI(){
   cl.className='clock';rl.textContent='';pl.textContent='';
   tb.classList.add('hidden');ib.classList.add('hidden');
 
-  // timecap badge
   let tcOn=false,tcSec=0;
   if(mode==='fortime'){tcOn=document.getElementById('ft-tc-on').checked;tcSec=cfg['ft-tc'];}
   if(mode==='emom'){tcOn=document.getElementById('emom-tc-on').checked;tcSec=cfg['emom-tc'];}
   if(tcOn){tb.classList.remove('hidden');tb.textContent='⏱ Timecap '+fmt(tcSec);}
 
-  // countdown (running or frozen while paused)
   if(state==='countdown'||(state==='paused'&&elapsed===0&&cdCount>0)){
     lbl.textContent='10 SECONDS ON THE CLOCK!';
     cl.textContent=cdCount;cl.classList.add('cd');return;
   }
-  if(state==='done') cl.classList.add('done');
+  if(state==='done')cl.classList.add('done');
 
-  // info bar when running
   if(state==='running'||state==='paused'){
-    if(mode==='emom'){
-      ib.classList.remove('hidden');
-      ib.textContent='Work '+fmt(cfg['emom-work'])+'  ·  Rest '+fmt(cfg['emom-rest'])+'  ·  '+cfg['emom-rounds']+' runder';
-    } else if(mode==='amrap'){
-      ib.classList.remove('hidden');
-      ib.textContent='Varighet '+fmt(cfg['amrap-dur']);
-    }
+    if(mode==='emom'){ib.classList.remove('hidden');ib.textContent='Work '+fmt(cfg['emom-work'])+'  ·  Rest '+fmt(cfg['emom-rest'])+'  ·  '+cfg['emom-rounds']+' runder';}
+    else if(mode==='amrap'){ib.classList.remove('hidden');ib.textContent='Varighet '+fmt(cfg['amrap-dur']);}
   }
 
   if(mode==='fortime'){
@@ -456,14 +419,23 @@ function updateClockUI(){
   }
 }
 
+// INIT
+function initUI(){
+  document.getElementById('ft-tc-val').textContent=fmt(cfg['ft-tc']);
+  document.getElementById('amrap-dur-val').textContent=fmt(cfg['amrap-dur']);
+  document.getElementById('emom-work-val').textContent=fmt(cfg['emom-work']);
+  document.getElementById('emom-rest-val').textContent=fmt(cfg['emom-rest']);
+  document.getElementById('emom-tc-val').textContent=fmt(cfg['emom-tc']);
+  document.getElementById('emom-rounds-val').textContent=cfg['emom-rounds'];
+}
+
 document.addEventListener('keydown',e=>{
   if(e.key!=='Enter')return;
   if(!document.getElementById('modal').classList.contains('hidden'))confirmModal();
   else if(!document.getElementById('roundsModal').classList.contains('hidden'))confirmRoundsModal();
 });
 
-onTcToggle();
-switchMode('fortime');
+initUI();onTcToggle();switchMode('fortime');
 </script>
 </body>
 </html>
