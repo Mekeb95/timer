@@ -19,16 +19,16 @@ body{display:flex;flex-direction:column;height:100dvh;}
 
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 
-.clock-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;}
-.clock-label{font-size:15px;font-weight:500;color:#636366;letter-spacing:.06em;text-transform:uppercase;min-height:22px;text-align:center;}
-.clock{font-size:clamp(100px,32vw,160px);font-weight:200;letter-spacing:-.02em;color:#fff;line-height:1;font-variant-numeric:tabular-nums;}
+.clock-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 16px;}
+.clock-label{font-size:13px;font-weight:500;color:#636366;letter-spacing:.06em;text-transform:uppercase;min-height:18px;text-align:center;}
+.clock{font-size:clamp(100px,28vw,180px);font-weight:100;letter-spacing:-.03em;color:#fff;line-height:1;font-variant-numeric:tabular-nums;}
 .clock.cd{color:#FF9F0A;}
 .clock.done{color:#FF453A;}
-.round-label{font-size:26px;font-weight:500;color:#0A84FF;min-height:32px;}
-.phase-label{font-size:17px;font-weight:600;color:#30D158;min-height:24px;}
+.round-label{font-size:24px;font-weight:500;color:#0A84FF;min-height:30px;}
+.phase-label{font-size:16px;font-weight:600;color:#30D158;min-height:22px;}
 .phase-label.rest{color:#FF9F0A;}
-.tc-badge{display:inline-flex;align-items:center;gap:6px;background:#2C1A00;border:1px solid #FF9F0A;border-radius:20px;padding:4px 14px;font-size:13px;color:#FF9F0A;font-weight:600;margin-top:4px;min-height:28px;}
-.info-bar{font-size:12px;color:#3A3A3C;font-weight:500;letter-spacing:.04em;margin-top:6px;text-align:center;}
+.tc-badge{display:inline-flex;align-items:center;gap:6px;background:#2C1A00;border:1px solid #FF9F0A;border-radius:20px;padding:3px 12px;font-size:12px;color:#FF9F0A;font-weight:600;min-height:24px;}
+.info-bar{font-size:11px;color:#3A3A3C;font-weight:500;letter-spacing:.04em;margin-top:2px;text-align:center;}
 
 .controls{display:flex;gap:20px;justify-content:center;padding:12px 0;align-items:center;}
 .btn-circle{width:80px;height:80px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -68,20 +68,19 @@ input:checked+.slider:before{transform:translateX(20px);}
 .modal-btn.cancel{background:#2C2C2E;color:#fff;}
 .modal-btn.ok{background:#0A84FF;color:#fff;}
 
-/* LANDSCAPE */
 @media (orientation: landscape) {
   .main{flex-direction:row;}
-  .clock-area{flex:1;padding:8px 16px;}
-  .clock{font-size:clamp(56px,22vh,110px);}
-  .clock-label{font-size:13px;}
-  .round-label{font-size:16px;}
-  .phase-label{font-size:14px;}
-  .tc-badge{font-size:11px;padding:3px 10px;min-height:22px;}
-  .info-bar{font-size:11px;}
-  .controls{flex-direction:column;padding:8px 12px;gap:12px;justify-content:center;flex-shrink:0;}
-  .btn-circle{width:64px;height:64px;}
-  .btn-reset{font-size:22px;}
-  .settings-panel{width:210px;border-radius:0;overflow-y:auto;padding:10px 12px;flex-shrink:0;}
+  .clock-area{flex:1;padding:4px 8px;}
+  .clock{font-size:clamp(80px,30vh,200px);}
+  .clock-label{font-size:11px;}
+  .round-label{font-size:18px;}
+  .phase-label{font-size:13px;}
+  .tc-badge{font-size:10px;padding:2px 8px;min-height:20px;}
+  .info-bar{font-size:10px;}
+  .controls{flex-direction:column;padding:8px 10px;gap:10px;justify-content:center;flex-shrink:0;}
+  .btn-circle{width:60px;height:60px;}
+  .btn-reset{font-size:20px;}
+  .settings-panel{width:200px;border-radius:0;overflow-y:auto;padding:10px 12px;flex-shrink:0;}
   .settings-row{padding:7px 2px;}
   .settings-row label{font-size:13px;}
   .settings-hint{font-size:10px;}
