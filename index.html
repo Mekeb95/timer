@@ -92,10 +92,14 @@ input:checked+.slider:before{transform:translateX(20px);}
 }
 
 .hidden{display:none!important;}
+
+.progress-bar{height:4px;width:100%;background:#2C2C2E;flex-shrink:0;overflow:hidden;}
+.progress-fill{height:100%;width:0%;transition:width .8s linear;border-radius:0 2px 2px 0;}
 </style>
 </head>
 <body>
 <div class="main">
+  <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
   <div class="clock-area">
     <div id="clockLabel" class="clock-label">FOR TIME</div>
     <div id="clock" class="clock">0:00</div>
@@ -382,10 +386,37 @@ function updateClockUI(){
   cl.className='clock';rl.textContent='';pl.textContent='';
   tb.classList.add('hidden');ib.classList.add('hidden');
 
+  const pb=document.getElementById('progressBar');
+  const pf=document.getElementById('progressFill');
+
   let tcOn=false,tcSec=0;
   if(mode==='fortime'){tcOn=document.getElementById('ft-tc-on').checked;tcSec=cfg['ft-tc'];}
   if(mode==='emom'){tcOn=document.getElementById('emom-tc-on').checked;tcSec=cfg['emom-tc'];}
   if(tcOn){tb.classList.remove('hidden');tb.textContent='⏱ Timecap '+fmt(tcSec);}
+
+  // PROGRESS BAR
+  if(state==='idle'||state==='done'){
+    pb.style.display='none';
+  } else if(state==='countdown'||(state==='paused'&&elapsed===0&&cdCount>0)){
+    pb.style.display='block';
+    pf.style.width=((10-cdCount)/10*100)+'%';
+    pf.style.background='#FF9F0A';
+  } else {
+    pb.style.display='block';
+    let pct=0,color='#0A84FF';
+    if(mode==='fortime'){
+      if(tcOn){pct=Math.min(1,elapsed/tcSec);color='#0A84FF';}
+      else{pb.style.display='none';}
+    } else if(mode==='amrap'){
+      pct=Math.min(1,elapsed/cfg['amrap-dur']);color='#FF9F0A';
+    } else if(mode==='emom'){
+      const dur=emomPhase==='work'?cfg['emom-work']:cfg['emom-rest'];
+      pct=Math.min(1,emomPhaseElapsed/dur);
+      color=emomPhase==='work'?'#30D158':'#FF9F0A';
+    }
+    pf.style.width=(pct*100)+'%';
+    pf.style.background=color;
+  }
 
   if(state==='countdown'||(state==='paused'&&elapsed===0&&cdCount>0)){
     lbl.textContent='10 SECONDS ON THE CLOCK!';
