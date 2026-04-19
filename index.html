@@ -96,12 +96,15 @@ input:checked+.slider:before{transform:translateX(20px);}
 .progress-bar{height:4px;width:100%;background:#2C2C2E;flex-shrink:0;overflow:hidden;}
 .progress-fill{height:100%;width:0%;transition:width .8s linear;border-radius:0 2px 2px 0;}
 
-.rep-btn{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:90px;height:110px;border-radius:24px;background:#2C2C2E;border:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;z-index:10;gap:4px;transition:background .08s,transform .08s;}
-.rep-btn:active{background:#3A3A3C;transform:translateY(-50%) scale(.94);}
+.rep-btn{position:static;transform:none;width:90px;height:110px;border-radius:24px;background:#2C2C2E;border:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;z-index:10;gap:4px;transition:background .08s,transform .08s;}
+.rep-btn:active{background:#3A3A3C;transform:scale(.94);}
 .rep-btn.tapped{background:#1C4A1C;}
 .rep-count{font-size:54px;font-weight:300;line-height:1;font-variant-numeric:tabular-nums;}
 .rep-label{font-size:11px;font-weight:600;color:#636366;letter-spacing:.06em;text-transform:uppercase;}
-@media (orientation:landscape){.rep-btn{position:static;transform:none;width:60px;height:78px;border-radius:16px;order:1;}.rep-count{font-size:36px;}}
+@media (orientation:landscape){
+  .rep-btn{position:fixed;left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);width:72px;height:88px;border-radius:18px;}
+  .rep-count{font-size:38px;}
+}
 </style>
 </head>
 <body>
