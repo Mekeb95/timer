@@ -95,6 +95,13 @@ input:checked+.slider:before{transform:translateX(20px);}
 
 .progress-bar{height:4px;width:100%;background:#2C2C2E;flex-shrink:0;overflow:hidden;}
 .progress-fill{height:100%;width:0%;transition:width .8s linear;border-radius:0 2px 2px 0;}
+
+.rep-btn{position:fixed;left:16px;top:50%;transform:translateY(-50%);width:76px;height:100px;border-radius:22px;background:#2C2C2E;border:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;z-index:10;gap:4px;transition:background .08s,transform .08s;}
+.rep-btn:active{background:#3A3A3C;transform:translateY(-50%) scale(.94);}
+.rep-btn.tapped{background:#1C4A1C;}
+.rep-count{font-size:46px;font-weight:300;line-height:1;font-variant-numeric:tabular-nums;}
+.rep-label{font-size:10px;font-weight:600;color:#636366;letter-spacing:.06em;text-transform:uppercase;}
+@media (orientation:landscape){.rep-btn{left:8px;width:58px;height:78px;border-radius:16px;}.rep-count{font-size:34px;}}
 </style>
 </head>
 <body>
@@ -188,6 +195,11 @@ input:checked+.slider:before{transform:translateX(20px);}
   </div>
 </div>
 
+<button id="repBtn" class="rep-btn hidden" onclick="addRep()">
+  <span class="rep-count" id="repCount">0</span>
+  <span class="rep-label">REPS</span>
+</button>
+
 <nav class="tabs">
   <button class="tab active" id="tab-fortime" onclick="switchMode('fortime')">For Time</button>
   <button class="tab" id="tab-amrap" onclick="switchMode('amrap')">AMRAP</button>
@@ -238,6 +250,7 @@ let mode='fortime',state='idle';
 let elapsed=0,interval=null,cdCount=10;
 let emomPhase='work',emomRound=1,emomPhaseElapsed=0;
 let modalKey='';
+let repCount=0,repCooldown=false;
 
 // AUDIO
 const AC=new (window.AudioContext||window.webkitAudioContext)();
@@ -267,6 +280,20 @@ document.addEventListener('visibilitychange',async()=>{if(document.visibilitySta
 
 // FORMAT
 function fmt(s){s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+(s%60<10?'0':'')+s%60;}
+
+// REP COUNTER
+function addRep(){
+  if(repCooldown)return;
+  repCount++;
+  document.getElementById('repCount').textContent=repCount;
+  repCooldown=true;
+  const btn=document.getElementById('repBtn');
+  btn.classList.add('tapped');
+  vib([30]);
+  setTimeout(()=>{repCooldown=false;btn.classList.remove('tapped');},1000);
+}
+function resetReps(){repCount=0;repCooldown=false;document.getElementById('repCount').textContent='0';document.getElementById('repBtn').classList.remove('tapped');}
+function showRepBtn(v){document.getElementById('repBtn').classList.toggle('hidden',!v);}
 
 // HELPERS
 function showTabs(v){document.querySelector('.tabs').classList.toggle('hidden',!v);}
@@ -312,22 +339,23 @@ function startStop(){AC.resume();if(state==='idle'||state==='done')startCd();els
 function startCd(){
   state='countdown';cdCount=10;elapsed=0;
   emomPhase='work';emomRound=1;emomPhaseElapsed=0;
+  resetReps();
   requestWakeLock();
-  setStartVisible(false);showSettings(false);showTabs(false);setPauseVisible(true);
+  setStartVisible(false);showSettings(false);showTabs(false);setPauseVisible(true);showRepBtn(false);
   updateClockUI();
   interval=setInterval(tickCd,1000);
 }
 function tickCd(){
   cdCount--;
   if(cdCount<=3&&cdCount>0)sndCd();
-  if(cdCount<=0){clearInterval(interval);sndGo();state='running';interval=setInterval(tickRun,1000);}
+  if(cdCount<=0){clearInterval(interval);sndGo();state='running';showRepBtn(true);interval=setInterval(tickRun,1000);}
   updateClockUI();
 }
 function resumeFromPause(){
   const wasCd=cdCount>0&&elapsed===0;
   state=wasCd?'countdown':'running';
   requestWakeLock();
-  setStartVisible(false);showSettings(false);showTabs(false);setPauseVisible(true);
+  setStartVisible(false);showSettings(false);showTabs(false);setPauseVisible(true);showRepBtn(!wasCd);
   interval=setInterval(wasCd?tickCd:tickRun,1000);
 }
 function tickRun(){
@@ -355,7 +383,7 @@ function checkEmom(){
 }
 function finish(){
   clearInterval(interval);state='done';releaseWakeLock();sndBuzzerFull();
-  setStartBtn('start');setStartVisible(true);showSettings(true);showTabs(true);setPauseVisible(false);
+  setStartBtn('start');setStartVisible(true);showSettings(true);showTabs(true);setPauseVisible(false);showRepBtn(false);
   updateClockUI();
 }
 function pauseTimer(){
@@ -363,14 +391,14 @@ function pauseTimer(){
   const isCd=cdCount>0&&elapsed===0;
   setStartBtn('play');setStartVisible(true);
   if(!isCd&&mode!=='emom')showSettings(true);
-  showTabs(true);setPauseVisible(false);
+  showTabs(true);setPauseVisible(false);showRepBtn(!isCd);
   updateClockUI();
 }
 function resetTimer(){
   clearInterval(interval);state='idle';elapsed=0;cdCount=10;
   emomPhase='work';emomRound=1;emomPhaseElapsed=0;
-  releaseWakeLock();
-  setStartBtn('start');setStartVisible(true);showSettings(true);showTabs(true);setPauseVisible(false);
+  resetReps();releaseWakeLock();
+  setStartBtn('start');setStartVisible(true);showSettings(true);showTabs(true);setPauseVisible(false);showRepBtn(false);
   updateClockUI();
 }
 
