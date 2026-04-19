@@ -31,7 +31,7 @@ body{display:flex;flex-direction:column;height:100dvh;padding-top:env(safe-area-
 .tc-badge{display:inline-flex;align-items:center;gap:6px;background:#2C1A00;border:1px solid #FF9F0A;border-radius:20px;padding:3px 12px;font-size:12px;color:#FF9F0A;font-weight:600;min-height:24px;}
 .info-bar{font-size:11px;color:#3A3A3C;font-weight:500;letter-spacing:.04em;margin-top:2px;text-align:center;}
 
-.controls{display:flex;gap:20px;justify-content:center;padding:12px 0;align-items:center;}
+.controls{position:relative;display:flex;gap:20px;justify-content:center;padding:12px 0;align-items:center;}
 .btn-circle{width:80px;height:80px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation;}
 .btn-start{background:#0A84FF;color:#fff;font-size:15px;font-weight:600;}
 .btn-pause{background:#FF9F0A;color:#fff;}
@@ -96,12 +96,12 @@ input:checked+.slider:before{transform:translateX(20px);}
 .progress-bar{height:4px;width:100%;background:#2C2C2E;flex-shrink:0;overflow:hidden;}
 .progress-fill{height:100%;width:0%;transition:width .8s linear;border-radius:0 2px 2px 0;}
 
-.rep-btn{position:fixed;left:16px;top:50%;transform:translateY(-50%);width:76px;height:100px;border-radius:22px;background:#2C2C2E;border:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;z-index:10;gap:4px;transition:background .08s,transform .08s;}
+.rep-btn{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:76px;height:90px;border-radius:22px;background:#2C2C2E;border:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;z-index:10;gap:4px;transition:background .08s,transform .08s;}
 .rep-btn:active{background:#3A3A3C;transform:translateY(-50%) scale(.94);}
 .rep-btn.tapped{background:#1C4A1C;}
-.rep-count{font-size:46px;font-weight:300;line-height:1;font-variant-numeric:tabular-nums;}
+.rep-count{font-size:44px;font-weight:300;line-height:1;font-variant-numeric:tabular-nums;}
 .rep-label{font-size:10px;font-weight:600;color:#636366;letter-spacing:.06em;text-transform:uppercase;}
-@media (orientation:landscape){.rep-btn{left:8px;width:58px;height:78px;border-radius:16px;}.rep-count{font-size:34px;}}
+@media (orientation:landscape){.rep-btn{position:static;transform:none;width:52px;height:64px;border-radius:14px;order:-1;}.rep-count{font-size:30px;}}
 </style>
 </head>
 <body>
@@ -117,6 +117,10 @@ input:checked+.slider:before{transform:translateX(20px);}
   </div>
 
   <div class="controls">
+    <button id="repBtn" class="rep-btn hidden" onclick="addRep()">
+      <span class="rep-count" id="repCount">0</span>
+      <span class="rep-label">REPS</span>
+    </button>
     <button class="btn-circle btn-reset" onclick="resetTimer()">↺</button>
     <button class="btn-circle btn-start" id="btnStart" onclick="startStop()">START</button>
     <button class="btn-circle btn-pause hidden" id="btnPause" onclick="pauseTimer()">
@@ -194,11 +198,6 @@ input:checked+.slider:before{transform:translateX(20px);}
     </div>
   </div>
 </div>
-
-<button id="repBtn" class="rep-btn hidden" onclick="addRep()">
-  <span class="rep-count" id="repCount">0</span>
-  <span class="rep-label">REPS</span>
-</button>
 
 <nav class="tabs">
   <button class="tab active" id="tab-fortime" onclick="switchMode('fortime')">For Time</button>
