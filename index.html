@@ -2,112 +2,17 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="CF Timer"/>
 <meta name="theme-color" content="#000000"/>
 <link rel="apple-touch-icon" href="icon.png"/>
+<link rel="stylesheet" href="style.css"/>
 <title>CrossFit Timer</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;overflow:hidden;}
-body{display:flex;flex-direction:column;height:100dvh;padding-top:env(safe-area-inset-top,0);padding-left:env(safe-area-inset-left,0);padding-right:env(safe-area-inset-right,0);}
-
-.tabs{display:flex;background:#1C1C1E;flex-shrink:0;border-radius:0 0 20px 20px;overflow:hidden;padding-bottom:env(safe-area-inset-bottom,0);}
-.tab{flex:1;padding:14px 4px 12px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;background:none;border:none;color:#636366;cursor:pointer;border-top:2px solid transparent;touch-action:manipulation;}
-.tab.active{color:#0A84FF;border-top:2px solid #0A84FF;}
-
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-
-.clock-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 16px;}
-.clock-label{font-size:13px;font-weight:500;color:#636366;letter-spacing:.06em;text-transform:uppercase;min-height:18px;text-align:center;}
-.clock{font-size:clamp(120px,38vw,220px);font-weight:300;letter-spacing:-.03em;color:#fff;line-height:1;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;}
-.clock.cd{color:#FF9F0A;}
-.clock.done{color:#FF453A;}
-.round-label{font-size:24px;font-weight:500;color:#0A84FF;min-height:30px;}
-.phase-label{font-size:16px;font-weight:600;color:#30D158;min-height:22px;}
-.phase-label.rest{color:#FF9F0A;}
-.tc-badge{display:inline-flex;align-items:center;gap:6px;background:#2C1A00;border:1px solid #FF9F0A;border-radius:20px;padding:3px 12px;font-size:12px;color:#FF9F0A;font-weight:600;min-height:24px;}
-.info-bar{font-size:11px;color:#3A3A3C;font-weight:500;letter-spacing:.04em;margin-top:2px;text-align:center;}
-
-.controls{position:relative;display:flex;gap:20px;justify-content:center;padding:12px 0;align-items:center;}
-.btn-circle{width:80px;height:80px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation;}
-.btn-start{background:#0A84FF;color:#fff;font-size:15px;font-weight:600;}
-.btn-pause{background:#FF9F0A;color:#fff;}
-.btn-reset{background:#2C2C2E;color:#fff;font-size:28px;}
-
-.settings-panel{background:#1C1C1E;border-radius:20px 20px 0 0;padding:16px;flex-shrink:0;}
-.settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 4px;border-bottom:1px solid #2C2C2E;}
-.settings-row:last-child{border-bottom:none;}
-.settings-row label{font-size:15px;font-weight:500;color:#fff;}
-.settings-hint{font-size:12px;color:#636366;margin-top:2px;}
-
-.stepper{display:flex;align-items:center;gap:4px;}
-.sb{width:38px;height:38px;border-radius:50%;background:#2C2C2E;border:none;color:#fff;font-size:22px;font-weight:300;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
-.sb:active{background:#3A3A3C;}
-.sv{font-size:16px;font-weight:600;min-width:56px;text-align:center;color:#0A84FF;cursor:pointer;padding:6px 4px;border-radius:8px;background:#0A84FF18;touch-action:manipulation;}
-
-.toggle{position:relative;width:51px;height:31px;flex-shrink:0;}
-.toggle input{opacity:0;width:0;height:0;}
-.slider{position:absolute;inset:0;background:#3A3A3C;border-radius:31px;transition:.2s;}
-.slider:before{content:'';position:absolute;height:27px;width:27px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 2px 6px rgba(0,0,0,.4);}
-input:checked+.slider{background:#0A84FF;}
-input:checked+.slider:before{transform:translateX(20px);}
-
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
-.modal{background:#1C1C1E;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:24px 20px calc(36px + env(safe-area-inset-bottom,0));}
-.modal h2{font-size:17px;font-weight:600;text-align:center;margin-bottom:20px;}
-.modal-inputs{display:flex;align-items:center;justify-content:center;gap:8px;}
-.tc{display:flex;flex-direction:column;align-items:center;gap:6px;}
-.tc span{font-size:13px;color:#636366;font-weight:500;}
-.ti{width:86px;height:68px;background:#2C2C2E;border:2px solid transparent;border-radius:14px;color:#fff;font-size:34px;font-weight:200;text-align:center;font-variant-numeric:tabular-nums;outline:none;}
-.ti:focus{border-color:#0A84FF;}
-.tsep{font-size:34px;font-weight:200;color:#636366;padding-bottom:22px;}
-.modal-btns{display:flex;gap:12px;margin-top:24px;}
-.modal-btn{flex:1;height:56px;border-radius:14px;border:none;font-size:17px;font-weight:600;cursor:pointer;touch-action:manipulation;}
-.modal-btn.cancel{background:#2C2C2E;color:#fff;}
-.modal-btn.ok{background:#0A84FF;color:#fff;}
-
-@media (orientation: landscape) {
-  .main{flex-direction:row;}
-  .clock-area{flex:1;padding:2px 8px;}
-  .clock{font-size:clamp(130px,56vh,360px);}
-  .clock-label{font-size:13px;}
-  .round-label{font-size:20px;}
-  .phase-label{font-size:15px;}
-  .tc-badge{font-size:11px;padding:2px 8px;min-height:20px;}
-  .info-bar{font-size:11px;}
-  .controls{flex-direction:column;padding:8px 10px;gap:10px;justify-content:center;flex-shrink:0;}
-  .btn-circle{width:60px;height:60px;}
-  .btn-reset{font-size:20px;}
-  .settings-panel{width:200px;border-radius:0;overflow-y:auto;padding:10px 12px;flex-shrink:0;}
-  .settings-row{padding:7px 2px;}
-  .settings-row label{font-size:13px;}
-  .settings-hint{font-size:10px;}
-  .sb{width:30px;height:30px;font-size:16px;}
-  .sv{font-size:13px;min-width:42px;padding:4px 2px;}
-  .tabs{position:fixed;bottom:0;left:0;right:0;padding-bottom:env(safe-area-inset-bottom,0);}
-  body{padding-bottom:calc(38px + env(safe-area-inset-bottom,0));padding-top:env(safe-area-inset-top,0);}
-}
-
-.hidden{display:none!important;}
-
-.progress-bar{height:4px;width:100%;background:#2C2C2E;flex-shrink:0;overflow:hidden;}
-.progress-fill{height:100%;width:0%;transition:width .8s linear;border-radius:0 2px 2px 0;}
-
-.rep-btn{position:static;transform:none;width:90px;height:110px;border-radius:24px;background:#2C2C2E;border:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;z-index:10;gap:4px;transition:background .08s,transform .08s;}
-.rep-btn:active{background:#3A3A3C;transform:scale(.94);}
-.rep-btn.tapped{background:#1C4A1C;}
-.rep-count{font-size:54px;font-weight:300;line-height:1;font-variant-numeric:tabular-nums;}
-.rep-label{font-size:11px;font-weight:600;color:#636366;letter-spacing:.06em;text-transform:uppercase;}
-@media (orientation:landscape){
-  .rep-btn{position:fixed;left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);width:72px;height:88px;border-radius:18px;}
-  .rep-count{font-size:38px;}
-}
-</style>
 </head>
 <body>
 <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
@@ -122,12 +27,12 @@ input:checked+.slider:before{transform:translateX(20px);}
   </div>
 
   <div class="controls">
-    <button class="btn-circle btn-reset" onclick="resetTimer()">↺</button>
-    <button class="btn-circle btn-start" id="btnStart" onclick="startStop()">START</button>
-    <button class="btn-circle btn-pause hidden" id="btnPause" onclick="pauseTimer()">
+    <button class="btn-circle btn-reset">↺</button>
+    <button class="btn-circle btn-start" id="btnStart">START</button>
+    <button class="btn-circle btn-pause hidden" id="btnPause">
       <svg width="28" height="32" viewBox="0 0 28 32" fill="white"><rect x="0" y="0" width="10" height="32" rx="3"/><rect x="18" y="0" width="10" height="32" rx="3"/></svg>
     </button>
-    <button id="repBtn" class="rep-btn hidden" onclick="addRep()">
+    <button id="repBtn" class="rep-btn hidden">
       <span class="rep-count" id="repCount">0</span>
       <span class="rep-label">REPS</span>
     </button>
@@ -138,14 +43,14 @@ input:checked+.slider:before{transform:translateX(20px);}
     <div id="panel-fortime">
       <div class="settings-row">
         <div><label>Timecap</label><div class="settings-hint">Maks tid — økt avsluttes automatisk</div></div>
-        <label class="toggle"><input type="checkbox" id="ft-tc-on" onchange="onTcToggle()"><span class="slider"></span></label>
+        <label class="toggle"><input type="checkbox" id="ft-tc-on"><span class="slider"></span></label>
       </div>
       <div class="settings-row" id="ft-tc-row">
         <label>Timecap</label>
         <div class="stepper">
-          <button class="sb" onclick="adjSec('ft-tc',-60)">−</button>
-          <span class="sv" id="ft-tc-val" onclick="openModal('ft-tc','Timecap')">20:00</span>
-          <button class="sb" onclick="adjSec('ft-tc',60)">+</button>
+          <button class="sb" data-key="ft-tc" data-delta="-60">−</button>
+          <span class="sv" id="ft-tc-val" data-modal-key="ft-tc" data-modal-title="Timecap">20:00</span>
+          <button class="sb" data-key="ft-tc" data-delta="60">+</button>
         </div>
       </div>
     </div>
@@ -155,9 +60,9 @@ input:checked+.slider:before{transform:translateX(20px);}
       <div class="settings-row">
         <label>Varighet</label>
         <div class="stepper">
-          <button class="sb" onclick="adjSec('amrap-dur',-60)">−</button>
-          <span class="sv" id="amrap-dur-val" onclick="openModal('amrap-dur','Varighet')">20:00</span>
-          <button class="sb" onclick="adjSec('amrap-dur',60)">+</button>
+          <button class="sb" data-key="amrap-dur" data-delta="-60">−</button>
+          <span class="sv" id="amrap-dur-val" data-modal-key="amrap-dur" data-modal-title="Varighet">20:00</span>
+          <button class="sb" data-key="amrap-dur" data-delta="60">+</button>
         </div>
       </div>
     </div>
@@ -167,37 +72,37 @@ input:checked+.slider:before{transform:translateX(20px);}
       <div class="settings-row">
         <label>Work</label>
         <div class="stepper">
-          <button class="sb" onclick="adjSec('emom-work',-5)">−</button>
-          <span class="sv" id="emom-work-val" onclick="openModal('emom-work','Work-tid')">0:40</span>
-          <button class="sb" onclick="adjSec('emom-work',5)">+</button>
+          <button class="sb" data-key="emom-work" data-delta="-5">−</button>
+          <span class="sv" id="emom-work-val" data-modal-key="emom-work" data-modal-title="Work-tid">0:40</span>
+          <button class="sb" data-key="emom-work" data-delta="5">+</button>
         </div>
       </div>
       <div class="settings-row">
         <label>Rest</label>
         <div class="stepper">
-          <button class="sb" onclick="adjSec('emom-rest',-5)">−</button>
-          <span class="sv" id="emom-rest-val" onclick="openModal('emom-rest','Rest-tid')">0:20</span>
-          <button class="sb" onclick="adjSec('emom-rest',5)">+</button>
+          <button class="sb" data-key="emom-rest" data-delta="-5">−</button>
+          <span class="sv" id="emom-rest-val" data-modal-key="emom-rest" data-modal-title="Rest-tid">0:20</span>
+          <button class="sb" data-key="emom-rest" data-delta="5">+</button>
         </div>
       </div>
       <div class="settings-row">
         <label>Runder</label>
         <div class="stepper">
-          <button class="sb" onclick="adjRounds(-1)">−</button>
-          <span class="sv" id="emom-rounds-val" onclick="openRoundsModal()">10</span>
-          <button class="sb" onclick="adjRounds(1)">+</button>
+          <button class="sb" data-rounds="-1">−</button>
+          <span class="sv" id="emom-rounds-val" data-open-rounds>10</span>
+          <button class="sb" data-rounds="1">+</button>
         </div>
       </div>
       <div class="settings-row">
         <div><label>Timecap</label><div class="settings-hint">Maks tid totalt</div></div>
-        <label class="toggle"><input type="checkbox" id="emom-tc-on" onchange="onTcToggle()"><span class="slider"></span></label>
+        <label class="toggle"><input type="checkbox" id="emom-tc-on"><span class="slider"></span></label>
       </div>
       <div class="settings-row" id="emom-tc-row">
         <label>Timecap</label>
         <div class="stepper">
-          <button class="sb" onclick="adjSec('emom-tc',-60)">−</button>
-          <span class="sv" id="emom-tc-val" onclick="openModal('emom-tc','Timecap')">30:00</span>
-          <button class="sb" onclick="adjSec('emom-tc',60)">+</button>
+          <button class="sb" data-key="emom-tc" data-delta="-60">−</button>
+          <span class="sv" id="emom-tc-val" data-modal-key="emom-tc" data-modal-title="Timecap">30:00</span>
+          <button class="sb" data-key="emom-tc" data-delta="60">+</button>
         </div>
       </div>
     </div>
@@ -205,13 +110,13 @@ input:checked+.slider:before{transform:translateX(20px);}
 </div>
 
 <nav class="tabs">
-  <button class="tab active" id="tab-fortime" onclick="switchMode('fortime')">For Time</button>
-  <button class="tab" id="tab-amrap" onclick="switchMode('amrap')">AMRAP</button>
-  <button class="tab" id="tab-emom" onclick="switchMode('emom')">EMOM</button>
+  <button class="tab active" id="tab-fortime" data-mode="fortime">For Time</button>
+  <button class="tab" id="tab-amrap" data-mode="amrap">AMRAP</button>
+  <button class="tab" id="tab-emom" data-mode="emom">EMOM</button>
 </nav>
 
 <!-- TIME MODAL -->
-<div id="modal" class="modal-bg hidden" onclick="bgClose(event,'modal')">
+<div id="modal" class="modal-bg hidden">
   <div class="modal">
     <h2 id="modalTitle">Sett tid</h2>
     <div class="modal-inputs">
@@ -220,287 +125,29 @@ input:checked+.slider:before{transform:translateX(20px);}
       <div class="tc"><input class="ti" type="tel" inputmode="numeric" pattern="[0-9]*" id="mSec" placeholder="00"/><span>sek</span></div>
     </div>
     <div class="modal-btns">
-      <button class="modal-btn cancel" onclick="closeModal()">Avbryt</button>
-      <button class="modal-btn ok" onclick="confirmModal()">OK</button>
+      <button class="modal-btn cancel">Avbryt</button>
+      <button class="modal-btn ok">OK</button>
     </div>
   </div>
 </div>
 
-<!-- PLAY ICON TEMPLATE (safe alternative to innerHTML) -->
+<!-- PLAY ICON TEMPLATE -->
 <template id="tplPlay"><svg width="24" height="28" viewBox="0 0 26 30" fill="white"><polygon points="4,0 26,15 4,30"/></svg></template>
 
 <!-- ROUNDS MODAL -->
-<div id="roundsModal" class="modal-bg hidden" onclick="bgClose(event,'roundsModal')">
+<div id="roundsModal" class="modal-bg hidden">
   <div class="modal">
     <h2>Antall runder</h2>
     <div class="modal-inputs">
       <div class="tc"><input class="ti" type="tel" inputmode="numeric" pattern="[0-9]*" id="mRounds" placeholder="10"/><span>runder</span></div>
     </div>
     <div class="modal-btns">
-      <button class="modal-btn cancel" onclick="closeRoundsModal()">Avbryt</button>
-      <button class="modal-btn ok" onclick="confirmRoundsModal()">OK</button>
+      <button class="modal-btn cancel">Avbryt</button>
+      <button class="modal-btn ok">OK</button>
     </div>
   </div>
 </div>
 
-<script>
-
-const cfgMin={'ft-tc':60,'amrap-dur':60,'emom-work':5,'emom-rest':5,'emom-tc':60};
-const cfgDefaults={'ft-tc':20*60,'amrap-dur':20*60,'emom-work':40,'emom-rest':20,'emom-tc':30*60,'emom-rounds':10};
-
-function loadCfg(){try{const s=localStorage.getItem('cf-timer-cfg');if(!s)return Object.assign({},cfgDefaults);const raw=JSON.parse(s);const safe={};const numKeys=['ft-tc','amrap-dur','emom-work','emom-rest','emom-tc','emom-rounds'];for(const k of numKeys){if(typeof raw[k]==='number'&&isFinite(raw[k])&&raw[k]>0)safe[k]=raw[k];}return Object.assign({},cfgDefaults,safe);}catch(e){return Object.assign({},cfgDefaults);}}
-function saveCfg(){try{localStorage.setItem('cf-timer-cfg',JSON.stringify(cfg));}catch(e){}}
-const cfg=loadCfg();
-
-let mode='fortime',state='idle';
-let elapsed=0,interval=null,cdCount=10;
-let emomPhase='work',emomRound=1,emomPhaseElapsed=0;
-let modalKey='';
-let repCount=0,repCooldown=false;
-
-// AUDIO
-const AC=new (window.AudioContext||window.webkitAudioContext)();
-function beep(f,d,t='sine',g=.6){const o=AC.createOscillator(),gn=AC.createGain();o.connect(gn);gn.connect(AC.destination);o.type=t;o.frequency.value=f;gn.gain.setValueAtTime(g,AC.currentTime);gn.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);o.start();o.stop(AC.currentTime+d);}
-function sndCd(){beep(880,.12,'sine',.7);vibCd();}
-function sndGo(){beep(1046,.08);setTimeout(()=>beep(1318,.08),90);setTimeout(()=>beep(1760,.22,'sine',.9),180);vibGo();}
-function sndWork(){beep(1174,.07);setTimeout(()=>beep(1568,.18,'sine',.8),80);vibWork();}
-function sndRest(){beep(523,.07);setTimeout(()=>beep(392,.22,'sine',.7),80);vibRest();}
-function sndBuzzerFull(){sndBuzzer();vibBuzzer();}
-function sndBuzzer(){[0,700,1400].forEach(t=>setTimeout(()=>{const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.type='sawtooth';o.frequency.setValueAtTime(220,AC.currentTime);g.gain.setValueAtTime(1.0,AC.currentTime);g.gain.setValueAtTime(1.0,AC.currentTime+.48);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.52);o.start();o.stop(AC.currentTime+.55);},t));}
-
-// VIBRATION
-function vib(pattern){if(navigator.vibrate)navigator.vibrate(pattern);}
-function vibGo(){vib([100,50,100,50,300]);}       // start: double tap + long
-function vibWork(){vib([200]);}                    // work: single firm
-function vibRest(){vib([80,60,80]);}               // rest: double soft
-function vibCd(){vib([40]);}                       // countdown pip: short tap
-function vibBuzzer(){vib([400,150,400,150,400]);} // finish: three long
-document.addEventListener('touchstart',()=>AC.resume(),{once:true});
-document.addEventListener('click',()=>AC.resume(),{once:true});
-
-// WAKE LOCK
-let wakeLock=null;
-async function requestWakeLock(){if(!('wakeLock' in navigator))return;try{wakeLock=await navigator.wakeLock.request('screen');}catch(e){}}
-async function releaseWakeLock(){if(wakeLock){try{await wakeLock.release();}catch(e){}wakeLock=null;}}
-document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&(state==='running'||state==='countdown'))await requestWakeLock();});
-
-// FORMAT
-function fmt(s){s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+(s%60<10?'0':'')+s%60;}
-
-// REP COUNTER
-function addRep(){
-  if(repCooldown)return;
-  repCount++;
-  document.getElementById('repCount').textContent=repCount;
-  repCooldown=true;
-  const btn=document.getElementById('repBtn');
-  btn.classList.add('tapped');
-  vib([30]);
-  setTimeout(()=>{repCooldown=false;btn.classList.remove('tapped');},1000);
-}
-function resetReps(){repCount=0;repCooldown=false;document.getElementById('repCount').textContent='0';document.getElementById('repBtn').classList.remove('tapped');}
-function showRepBtn(v){document.getElementById('repBtn').classList.toggle('hidden',!v);}
-
-// HELPERS
-function showTabs(v){document.querySelector('.tabs').classList.toggle('hidden',!v);}
-
-function setPauseVisible(v){document.getElementById('btnPause').classList.toggle('hidden',!v);}
-function setStartVisible(v){document.getElementById('btnStart').classList.toggle('hidden',!v);}
-function showSettings(v){document.getElementById('settingsPanel').classList.toggle('hidden',!v);}
-function setStartBtn(type){const b=document.getElementById('btnStart');if(type==='start'){b.replaceChildren();b.textContent='START';b.style.fontSize='15px';}else if(type==='play'){b.replaceChildren(document.getElementById('tplPlay').content.cloneNode(true));b.style.fontSize='';}}
-
-// STEPPERS
-function adjSec(k,d){cfg[k]=Math.max(cfgMin[k]||5,cfg[k]+d);document.getElementById(k+'-val').textContent=fmt(cfg[k]);saveCfg();resetTimer();}
-function adjRounds(d){cfg['emom-rounds']=Math.max(1,cfg['emom-rounds']+d);document.getElementById('emom-rounds-val').textContent=cfg['emom-rounds'];saveCfg();resetTimer();}
-
-// MODALS
-function openModal(k,title){modalKey=k;document.getElementById('modalTitle').textContent=title;document.getElementById('mMin').value=Math.floor(cfg[k]/60);document.getElementById('mSec').value=cfg[k]%60;document.getElementById('modal').classList.remove('hidden');setTimeout(()=>document.getElementById('mMin').focus(),150);}
-function closeModal(){document.getElementById('modal').classList.add('hidden');}
-function confirmModal(){const m=parseInt(document.getElementById('mMin').value)||0;const s=parseInt(document.getElementById('mSec').value)||0;cfg[modalKey]=Math.max(cfgMin[modalKey]||5,m*60+s);document.getElementById(modalKey+'-val').textContent=fmt(cfg[modalKey]);saveCfg();closeModal();resetTimer();}
-function openRoundsModal(){document.getElementById('mRounds').value=cfg['emom-rounds'];document.getElementById('roundsModal').classList.remove('hidden');setTimeout(()=>document.getElementById('mRounds').focus(),150);}
-function closeRoundsModal(){document.getElementById('roundsModal').classList.add('hidden');}
-function confirmRoundsModal(){cfg['emom-rounds']=Math.max(1,parseInt(document.getElementById('mRounds').value)||1);document.getElementById('emom-rounds-val').textContent=cfg['emom-rounds'];saveCfg();closeRoundsModal();resetTimer();}
-function bgClose(e,id){if(e.target===document.getElementById(id))document.getElementById(id).classList.add('hidden');}
-
-// TC TOGGLE
-function onTcToggle(){
-  document.getElementById('ft-tc-row').style.display=document.getElementById('ft-tc-on').checked?'flex':'none';
-  document.getElementById('emom-tc-row').style.display=document.getElementById('emom-tc-on').checked?'flex':'none';
-  updateClockUI();
-}
-
-// MODE SWITCH
-function switchMode(m){
-  resetTimer();mode=m;
-  ['fortime','amrap','emom'].forEach(x=>{
-    document.getElementById('tab-'+x).className='tab'+(x===m?' active':'');
-    document.getElementById('panel-'+x).classList.toggle('hidden',x!==m);
-  });
-  onTcToggle();updateClockUI();
-}
-
-// TIMER
-function startStop(){AC.resume();if(state==='idle'||state==='done')startCd();else if(state==='paused')resumeFromPause();}
-
-function startCd(){
-  state='countdown';cdCount=10;elapsed=0;
-  emomPhase='work';emomRound=1;emomPhaseElapsed=0;
-  resetReps();
-  requestWakeLock();
-  setStartVisible(false);showSettings(false);showTabs(false);setPauseVisible(true);showRepBtn(false);
-  updateClockUI();
-  interval=setInterval(tickCd,1000);
-}
-function tickCd(){
-  cdCount--;
-  if(cdCount<=3&&cdCount>0)sndCd();
-  if(cdCount<=0){clearInterval(interval);sndGo();state='running';showRepBtn(true);interval=setInterval(tickRun,1000);}
-  updateClockUI();
-}
-function resumeFromPause(){
-  const wasCd=cdCount>0&&elapsed===0;
-  state=wasCd?'countdown':'running';
-  requestWakeLock();
-  setStartVisible(false);showSettings(false);showTabs(false);setPauseVisible(true);showRepBtn(!wasCd);
-  interval=setInterval(wasCd?tickCd:tickRun,1000);
-}
-function tickRun(){
-  elapsed++;
-  if(mode==='emom')emomPhaseElapsed++;
-  checkTC();
-  if(mode==='amrap')checkAmrap();
-  if(mode==='emom')checkEmom();
-  updateClockUI();
-}
-function checkTC(){
-  let on=false,lim=0;
-  if(mode==='fortime'){on=document.getElementById('ft-tc-on').checked;lim=cfg['ft-tc'];}
-  if(mode==='emom'){on=document.getElementById('emom-tc-on').checked;lim=cfg['emom-tc'];}
-  if(on&&elapsed>=lim)finish();
-}
-function checkAmrap(){if(elapsed>=cfg['amrap-dur'])finish();}
-function checkEmom(){
-  const dur=emomPhase==='work'?cfg['emom-work']:cfg['emom-rest'];
-  if(emomPhaseElapsed>=dur){
-    emomPhaseElapsed=0;
-    if(emomPhase==='work'){emomPhase='rest';sndRest();}
-    else{emomRound++;if(emomRound>cfg['emom-rounds']){finish();return;}emomPhase='work';sndWork();}
-  }
-}
-function finish(){
-  clearInterval(interval);state='done';releaseWakeLock();sndBuzzerFull();
-  setStartBtn('start');setStartVisible(true);showSettings(true);showTabs(true);setPauseVisible(false);showRepBtn(false);
-  updateClockUI();
-}
-function pauseTimer(){
-  clearInterval(interval);state='paused';releaseWakeLock();
-  const isCd=cdCount>0&&elapsed===0;
-  setStartBtn('play');setStartVisible(true);
-  if(!isCd&&mode!=='emom')showSettings(true);
-  showTabs(true);setPauseVisible(false);showRepBtn(!isCd);
-  updateClockUI();
-}
-function resetTimer(){
-  clearInterval(interval);state='idle';elapsed=0;cdCount=10;
-  emomPhase='work';emomRound=1;emomPhaseElapsed=0;
-  resetReps();releaseWakeLock();
-  setStartBtn('start');setStartVisible(true);showSettings(true);showTabs(true);setPauseVisible(false);showRepBtn(false);
-  updateClockUI();
-}
-
-// UI
-function updateClockUI(){
-  const cl=document.getElementById('clock');
-  const lbl=document.getElementById('clockLabel');
-  const rl=document.getElementById('roundLabel');
-  const pl=document.getElementById('phaseLabel');
-  const tb=document.getElementById('tcBadge');
-  const ib=document.getElementById('infoBar');
-
-  cl.className='clock';rl.textContent='';pl.textContent='';
-  tb.classList.add('hidden');ib.classList.add('hidden');
-
-  const pb=document.getElementById('progressBar');
-  const pf=document.getElementById('progressFill');
-
-  let tcOn=false,tcSec=0;
-  if(mode==='fortime'){tcOn=document.getElementById('ft-tc-on').checked;tcSec=cfg['ft-tc'];}
-  if(mode==='emom'){tcOn=document.getElementById('emom-tc-on').checked;tcSec=cfg['emom-tc'];}
-  if(tcOn){tb.classList.remove('hidden');tb.textContent='⏱ Timecap '+fmt(tcSec);}
-
-  // PROGRESS BAR
-  if(state==='idle'||state==='done'){
-    pb.style.display='none';
-  } else if(state==='countdown'||(state==='paused'&&elapsed===0&&cdCount>0)){
-    pb.style.display='block';
-    pf.style.width=((10-cdCount)/10*100)+'%';
-    pf.style.background='#FF9F0A';
-  } else {
-    pb.style.display='block';
-    let pct=0,color='#0A84FF';
-    if(mode==='fortime'){
-      if(tcOn){pct=Math.min(1,elapsed/tcSec);color='#0A84FF';}
-      else{pb.style.display='none';}
-    } else if(mode==='amrap'){
-      pct=Math.min(1,elapsed/cfg['amrap-dur']);color='#FF9F0A';
-    } else if(mode==='emom'){
-      const dur=emomPhase==='work'?cfg['emom-work']:cfg['emom-rest'];
-      pct=Math.min(1,emomPhaseElapsed/dur);
-      color=emomPhase==='work'?'#30D158':'#FF9F0A';
-    }
-    pf.style.width=(pct*100)+'%';
-    pf.style.background=color;
-  }
-
-  if(state==='countdown'||(state==='paused'&&elapsed===0&&cdCount>0)){
-    lbl.textContent='10 SECONDS ON THE CLOCK!';
-    cl.textContent=cdCount;cl.classList.add('cd');return;
-  }
-  if(state==='done')cl.classList.add('done');
-
-  if(state==='running'||state==='paused'){
-    if(mode==='emom'){ib.classList.remove('hidden');ib.textContent='Work '+fmt(cfg['emom-work'])+'  ·  Rest '+fmt(cfg['emom-rest'])+'  ·  '+cfg['emom-rounds']+' runder';}
-    else if(mode==='amrap'){ib.classList.remove('hidden');ib.textContent='Varighet '+fmt(cfg['amrap-dur']);}
-  }
-
-  if(mode==='fortime'){
-    lbl.textContent=state==='done'?'FERDIG!':'FOR TIME';
-    cl.textContent=fmt(elapsed);
-  } else if(mode==='amrap'){
-    lbl.textContent=state==='done'?'AMRAP FERDIG':'AMRAP';
-    cl.textContent=fmt(state==='idle'&&elapsed===0?cfg['amrap-dur']:Math.max(0,cfg['amrap-dur']-elapsed));
-  } else if(mode==='emom'){
-    lbl.textContent=state==='done'?'EMOM FERDIG':'EMOM';
-    if(state==='idle'&&elapsed===0){cl.textContent=fmt(cfg['emom-work']);}
-    else{
-      const dur=emomPhase==='work'?cfg['emom-work']:cfg['emom-rest'];
-      cl.textContent=fmt(Math.max(0,dur-emomPhaseElapsed));
-      if(state!=='done'){
-        rl.textContent='Runde '+emomRound+' av '+cfg['emom-rounds'];
-        pl.textContent=emomPhase==='work'?'● WORK':'● REST';
-        pl.className='phase-label'+(emomPhase==='rest'?' rest':'');
-      }
-    }
-  }
-}
-
-// INIT
-function initUI(){
-  document.getElementById('ft-tc-val').textContent=fmt(cfg['ft-tc']);
-  document.getElementById('amrap-dur-val').textContent=fmt(cfg['amrap-dur']);
-  document.getElementById('emom-work-val').textContent=fmt(cfg['emom-work']);
-  document.getElementById('emom-rest-val').textContent=fmt(cfg['emom-rest']);
-  document.getElementById('emom-tc-val').textContent=fmt(cfg['emom-tc']);
-  document.getElementById('emom-rounds-val').textContent=cfg['emom-rounds'];
-}
-
-document.addEventListener('keydown',e=>{
-  if(e.key!=='Enter')return;
-  if(!document.getElementById('modal').classList.contains('hidden'))confirmModal();
-  else if(!document.getElementById('roundsModal').classList.contains('hidden'))confirmRoundsModal();
-});
-
-initUI();onTcToggle();switchMode('fortime');
-</script>
+<script src="script.js" defer></script>
 </body>
 </html>
