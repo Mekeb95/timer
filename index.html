@@ -2,6 +2,8 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -224,6 +226,9 @@ input:checked+.slider:before{transform:translateX(20px);}
   </div>
 </div>
 
+<!-- PLAY ICON TEMPLATE (safe alternative to innerHTML) -->
+<template id="tplPlay"><svg width="24" height="28" viewBox="0 0 26 30" fill="white"><polygon points="4,0 26,15 4,30"/></svg></template>
+
 <!-- ROUNDS MODAL -->
 <div id="roundsModal" class="modal-bg hidden" onclick="bgClose(event,'roundsModal')">
   <div class="modal">
@@ -239,12 +244,11 @@ input:checked+.slider:before{transform:translateX(20px);}
 </div>
 
 <script>
-const ICON_PLAY='<svg width="24" height="28" viewBox="0 0 26 30" fill="white"><polygon points="4,0 26,15 4,30"/></svg>';
 
 const cfgMin={'ft-tc':60,'amrap-dur':60,'emom-work':5,'emom-rest':5,'emom-tc':60};
 const cfgDefaults={'ft-tc':20*60,'amrap-dur':20*60,'emom-work':40,'emom-rest':20,'emom-tc':30*60,'emom-rounds':10};
 
-function loadCfg(){try{const s=localStorage.getItem('cf-timer-cfg');return s?Object.assign({},cfgDefaults,JSON.parse(s)):Object.assign({},cfgDefaults);}catch(e){return Object.assign({},cfgDefaults);}}
+function loadCfg(){try{const s=localStorage.getItem('cf-timer-cfg');if(!s)return Object.assign({},cfgDefaults);const raw=JSON.parse(s);const safe={};const numKeys=['ft-tc','amrap-dur','emom-work','emom-rest','emom-tc','emom-rounds'];for(const k of numKeys){if(typeof raw[k]==='number'&&isFinite(raw[k])&&raw[k]>0)safe[k]=raw[k];}return Object.assign({},cfgDefaults,safe);}catch(e){return Object.assign({},cfgDefaults);}}
 function saveCfg(){try{localStorage.setItem('cf-timer-cfg',JSON.stringify(cfg));}catch(e){}}
 const cfg=loadCfg();
 
@@ -303,7 +307,7 @@ function showTabs(v){document.querySelector('.tabs').classList.toggle('hidden',!
 function setPauseVisible(v){document.getElementById('btnPause').classList.toggle('hidden',!v);}
 function setStartVisible(v){document.getElementById('btnStart').classList.toggle('hidden',!v);}
 function showSettings(v){document.getElementById('settingsPanel').classList.toggle('hidden',!v);}
-function setStartBtn(type){const b=document.getElementById('btnStart');if(type==='start'){b.textContent='START';b.style.fontSize='15px';}else if(type==='play'){b.innerHTML=ICON_PLAY;b.style.fontSize='';}}
+function setStartBtn(type){const b=document.getElementById('btnStart');if(type==='start'){b.replaceChildren();b.textContent='START';b.style.fontSize='15px';}else if(type==='play'){b.replaceChildren(document.getElementById('tplPlay').content.cloneNode(true));b.style.fontSize='';}}
 
 // STEPPERS
 function adjSec(k,d){cfg[k]=Math.max(cfgMin[k]||5,cfg[k]+d);document.getElementById(k+'-val').textContent=fmt(cfg[k]);saveCfg();resetTimer();}
